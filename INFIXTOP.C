@@ -1,130 +1,160 @@
 #include<stdio.h>
-#include<conio.h>
+#include<stdlib.h>
 #include<ctype.h>
-#define MAX 40
+#include<string.h>
 
-void push(char a);
-void pop();
-void display();
-int precedence(char c);
-void infixtopostfix(char b);
-char operators[MAX];
-int top=-1;
+#define SIZE 100
 
-void main()
+char stack[SIZE];
+int top = -1;
+
+void push(char item)
 {
-	char exp[20];
-	int i,n;
-	printf("Enter the no. of elememts");	
-	scanf("%d",&n);
-	printf("Enter the infix expression:");
-	for(i=0;i<n;i++)
+	if(top >= SIZE-1)
 	{
-		scanf("%c",&exp[i]);
-		infixtopostfix(exp[i]);
-	}
-	getch();
-	
-}
-void push(char a)
-{
-	if(top>=(MAX-1))
-	{
-		printf("\n Stack Overflow");
+		printf("\nStack Overflow.");
 	}
 	else
 	{
-		operators[++top]=a;
+		top = top+1;
+		stack[top] = item;
 	}
 }
-void pop()
+
+char pop()
 {
-	if(top<0)
+	char item ;
+
+	if(top <0)
 	{
-		printf("\n Stack Underflow");
+		printf("stack under flow: invalid infix expression");
+		getchar();
+		exit(1);
 	}
 	else
 	{
-		top--;
+		item = stack[top];
+		top = top-1;
+		return(item);
 	}
 }
-void display()
+
+int is_operator(char symbol)
 {
-	int i=top;
-	if(top<0)
+	if(symbol == '^' || symbol == '*' || symbol == '/' || symbol == '+' || symbol =='-')
 	{
-		printf("\nSTACK UNDERFLOW");
-	}else
+		return 1;
+	}
+	else
 	{
-		printf("\nTHE STACK HAS:\n");
-		while(i>-1)
-		{
-			printf("\n %c ",operators[i]);
-			i--;
-		}
+	return 0;
 	}
 }
-int precedence(char c) 
-{ 
-    if(c == '^') 
-    return 3; 
-    else if(c == '*' || c == '/') 
-    return 2; 
-    else if(c == '+' || c == '-') 
-    return 1; 
-    else
-    return -1; 
-} 
-void infixtopostfix(char b)
+
+
+int precedence(char symbol)
 {
-	int temp1,temp2;
-	char c;
-	if(isalpha(b))
-		{
-		printf("%c",b);
-		}
-		else if(b=='(')
-		{
-			push(b);
-		}
-		else if(b == '+' || b == '-' || b == '*' || b == '/' || b == '^')
-		{
-			temp1=precedence(b);
-			temp2=precedence(operators[top]);
-			if(temp1>temp2)
-			{
-				push(b);
-			}
-			else
-			{
-				while(operators[top]!='(' || operators[top]!=')' || temp1<=temp2)
-				{
-					printf("%c",operators[top]);
-					pop();
-					temp2=precedence(operators[top]);		
-				}
-				push(b);
-			}
-		}
-		else if(b==')')	
-		{
-			c=operators[top];
-			while(c=='(')
-			{
-				pop();
-				c=operators[top];
-			}
-		}
-		
-	if(top>-1)
+	if(symbol == '^')
 	{
-		printf("%c",operators[top]);
-		pop();
+		return(3);
+	}
+	else if(symbol == '*' || symbol == '/')
+	{
+		return(2);
+	}
+	else if(symbol == '+' || symbol == '-')
+	{
+		return(1);
+	}
+	else
+	{
+		return(0);
 	}
 }
-		
-					
-		
-			
-			
+
+void InfixToPostfix(char infix_exp[], char postfix_exp[])
+{
+	int i, j;
+	char item;
+	char x;
+
+	push('(');
+	strcat(infix_exp,")");
+
+	i=0;
+	j=0;
+	item=infix_exp[i];
+
+	while(item != '\0')
+	{
+		if(item == '(')
+		{
+			push(item);
+		}
+		else if( isdigit(item) || isalpha(item))
+		{
+			postfix_exp[j] = item;
+			j++;
+		}
+		else if(is_operator(item) == 1)
+		{
+			x=pop();
+			while(is_operator(x) == 1 && precedence(x)>= precedence(item))
+			{
+				postfix_exp[j] = x;
+				j++;
+				x = pop();
+			}
+			push(x);
+			push(item);
+		}
+		else if(item == ')')
+		{
+			x = pop();
+			while(x != '(')
+			{
+				postfix_exp[j] = x;
+				j++;
+				x = pop();
+			}
+		}
+		else
+		{
+			printf("\nInvalid infix Expression.\n");
+			getchar();
+			exit(1);
+		}
+		i++;
+		item = infix_exp[i];
+	}
+	if(top>0)
+	{
+		printf("\nInvalid infix Expression.\n");
+		getchar();
+		exit(1);
+	}
+	if(top>0)
+	{
+		printf("\nInvalid infix Expression.\n");
+		getchar();
+		exit(1);
+	}
+
+
+	postfix_exp[j] = '\0';
+}
+
+int main()
+{
+	char infix[SIZE], postfix[SIZE];
+	printf("ASSUMPTION: The infix expression contains single letter variables and single digit constants only.\n");
+	printf("\nEnter Infix expression : ");
+	gets(infix);
+
+	InfixToPostfix(infix,postfix);
+	printf("Postfix Expression: ");
+	puts(postfix);
+
+	return 0;
+}
 			
